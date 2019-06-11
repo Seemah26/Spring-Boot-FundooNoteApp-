@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.bridgelabz.fundonoteapp.model.UserDetails;
 import com.bridgelabz.fundonoteapp.service.UserService;
-import com.bridgelabz.fundonoteapp.util.JwtUtil;
+import com.bridgelabz.fundonoteapp.util.JwtToken;
 
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*") 
@@ -36,7 +36,7 @@ public class RegistrationController {
 	public String active(HttpServletRequest request) {
 		String token = request.getHeader("token");
 
-		int id = JwtUtil.parseJWT(token);
+		int id = JwtToken.jwtTokenVerifier(token);
 		if (id >= 0) {
 			Optional<UserDetails> userList = userService.findById(id);
 			userList.get().setActiveStatus(1);

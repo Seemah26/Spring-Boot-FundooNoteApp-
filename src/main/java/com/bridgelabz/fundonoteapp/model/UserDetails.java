@@ -1,5 +1,6 @@
 package com.bridgelabz.fundonoteapp.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -9,10 +10,12 @@ public class UserDetails {
 	@Id
 	@GeneratedValue
 	private int userId;
+	@Column(name = "NAME", unique = true)
 	private String userName;
 	private String password;
 	private String mobileNumber;
 	private int activeStatus;
+	@Column(name = "EMAILID", unique = true)
 	private String emailId;
 
 	public int getUserId() {

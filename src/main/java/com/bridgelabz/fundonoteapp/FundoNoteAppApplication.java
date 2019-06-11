@@ -9,5 +9,4 @@ public class FundoNoteAppApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(FundoNoteAppApplication.class, args);
 	}
-
 }

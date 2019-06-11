@@ -22,13 +22,13 @@ import com.bridgelabz.fundonoteapp.service.NoteService;
 
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*") 
-@RequestMapping(value="/note")
+@RequestMapping(value="/label")
 public class LabelController {
 
 	@Autowired
 	private NoteService noteService;
 
-	@PostMapping(value = "/label")
+	@PostMapping(value = "/create")
 	public ResponseEntity<Label> createLabel(@RequestBody Label label, HttpServletRequest request) {
 		String token = request.getHeader("token");
 		if(label.equals(noteService.labelCreate(label, token)))
@@ -36,7 +36,6 @@ public class LabelController {
 		else
 			return new ResponseEntity<Label>(noteService.labelCreate(label, token),HttpStatus.BAD_REQUEST);
 	}
-
 	@PutMapping(value = "/label/{labelId}")
 	public ResponseEntity<Label> updateLabel(@RequestBody Label label, HttpServletRequest request,@PathVariable int labelId) {
 		String token = request.getHeader("token");
@@ -50,7 +49,7 @@ public class LabelController {
 		return new ResponseEntity<String>(noteService.labelDelete(token, labelId),HttpStatus.OK);
 	}
 
-	@GetMapping(value = "/labels")
+	@GetMapping(value = "/retrievelabel")
 	public ResponseEntity<List<Label>> fetchLabels(HttpServletRequest request) {
 		String token = request.getHeader("token");
 		return new ResponseEntity<List<Label>>(noteService.getLabels(token),HttpStatus.FOUND);

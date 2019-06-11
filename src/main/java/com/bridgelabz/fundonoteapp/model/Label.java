@@ -1,12 +1,13 @@
 package com.bridgelabz.fundonoteapp.model;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 @Entity
 public class Label {
 	@Id
-
+    @GeneratedValue
 	private int labelId;
 	private String labelName;
 	private int userId;

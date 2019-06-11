@@ -13,7 +13,6 @@ public class Note {
 	private int noteId;
 	private String title;
 	private String description;
-
 	private Timestamp createdOn;
 	private Timestamp updatedOn;
 	private boolean inTrash;

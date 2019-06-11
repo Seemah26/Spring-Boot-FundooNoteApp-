@@ -13,7 +13,7 @@ import com.bridgelabz.fundonoteapp.model.Note;
 import com.bridgelabz.fundonoteapp.repository.LabelRepository;
 import com.bridgelabz.fundonoteapp.repository.NoteReposirory;
 import com.bridgelabz.fundonoteapp.service.NoteService;
-import com.bridgelabz.fundonoteapp.util.JwtUtil;
+import com.bridgelabz.fundonoteapp.util.JwtToken;
 
 @Service
 @Transactional
@@ -21,23 +21,19 @@ public class NoteServiceImpl implements NoteService {
 
 	@Autowired
 	NoteReposirory noteRepository;
-
 	
 	@Autowired
 	private LabelRepository labelRepository;
 
 	@Override
 	public Note createNote(Note note, String token) {
-		int userId = JwtUtil.parseJWT(token);
-		System.out.println(userId);
-//		LocalTime time=LocalTime.now();
-		
+		int userId = JwtToken.jwtTokenVerifier(token);
 		  Date date = new Date(); 
 		  Timestamp ts = new Timestamp(date.getTime());
-		 
 		note.setCreatedOn(ts);
 		note.setUserId(userId);
-		return noteRepository.save(note);
+		 noteRepository.save(note);
+		 return note;
 	}
 
 	@Override
@@ -49,32 +45,37 @@ public class NoteServiceImpl implements NoteService {
 	@Override
 	public Note updateNote(Note note, String token) {
 		
-		int userId = JwtUtil.parseJWT(token);
+		int userId = JwtToken.jwtTokenVerifier(token);
 		List<Note> noteInfo = noteRepository.findByNoteIdAndUserId(note.getNoteId(), userId);
 		
 		  Date date = new Date();
 		  Timestamp ts = new Timestamp(date.getTime());
 		 
-		//LocalTime time=LocalTime.now();
+	
 		noteInfo.forEach(existingUser -> {
 			existingUser
 					.setCreatedOn(note.getCreatedOn() != null ? note.getCreatedOn() : noteInfo.get(0).getCreatedOn());
 			existingUser.setDescription(
 					note.getDescription() != null ? note.getDescription() : noteInfo.get(0).getDescription());
 			existingUser.setTitle(note.getTitle() != null ? note.getTitle() : noteInfo.get(0).getTitle());
-			/*
-			 * existingUser .setUpdatedOn(note.getUpdatedOn() != null ? note.getUpdatedOn()
-			 * : noteInfo.get(0).getUpdatedOn());
-			 */
+			if(note.isInTrash()==true) {
+				existingUser.setInTrash(note.isInTrash() != false ? note.isInTrash() : noteInfo.get(0).isInTrash());
+			}else {
+				existingUser.setInTrash(note.isInTrash() == false ? note.isInTrash() : noteInfo.get(0).isInTrash());
+			}
+			//existingUser.setInTrash(note.isInTrash() != false ? note.isInTrash() : noteInfo.get(0).isInTrash());
+			existingUser.setArchive(note.isArchive()!= false ? note.isArchive() : noteInfo.get(0).isArchive());
 		});
 		noteInfo.get(0).setUpdatedOn(ts);
 		return noteRepository.save(noteInfo.get(0));
+		  
 
 	}
 
 	@Override
 	public String deleteNote( int noteId,String token) {
-		int userId = JwtUtil.parseJWT(token);
+		int userId = JwtToken.jwtTokenVerifier(token);
+		System.out.println("token"+token);
 		List<Note> noteInfo = noteRepository.findByNoteIdAndUserId(noteId, userId);
 		noteRepository.delete(noteInfo.get(0));
 		return "Deleted";
@@ -88,28 +89,27 @@ public class NoteServiceImpl implements NoteService {
 
 	@Override
 	public List<Note> getAllNotes() {
-
 		return noteRepository.findAll();
 	}
 
 	@Override
 	public List<Note> getNotes(String token) {
-		int id = JwtUtil.parseJWT(token);
+		int id = JwtToken.jwtTokenVerifier(token);
 		List<Note> list = noteRepository.findByUserId(id);
 		return list;
 	}
 
 	@Override
 	public Label labelCreate(Label label, String token) {
-		int userId = JwtUtil.parseJWT(token);
-		label.setUserId(userId);
+		int userId = JwtToken.jwtTokenVerifier(token);
+	label.setUserId(userId);
 
 		return labelRepository.save(label);
 	}
 
 	@Override
 	public Label labelUpdate(Label label, String token,int labelId) {
-		int userId = JwtUtil.parseJWT(token);
+		int userId = JwtToken.jwtTokenVerifier(token);
 		List<Label> list = labelRepository.findByUserIdAndLabelId(userId, labelId);
 		list.forEach(userLabel -> {
 			userLabel.setLabelName(label.getLabelName() != null ? label.getLabelName() : list.get(0).getLabelName());
@@ -121,7 +121,7 @@ public class NoteServiceImpl implements NoteService {
 
 	@Override
 	public String labelDelete(String token, int labelId) {
-		int userId = JwtUtil.parseJWT(token);
+		int userId = JwtToken.jwtTokenVerifier(token);
 		List<Label> list = labelRepository.findByUserIdAndLabelId(userId, labelId);
 		labelRepository.delete(list.get(0));
 		return "Deleted";
@@ -129,7 +129,7 @@ public class NoteServiceImpl implements NoteService {
 
 	@Override
 	public List<Label> getLabels(String token) {
-		int userId = JwtUtil.parseJWT(token);
+		int userId = JwtToken.jwtTokenVerifier(token);
 		List<Label> list = labelRepository.findByUserId(userId);
 		return list;
 	}

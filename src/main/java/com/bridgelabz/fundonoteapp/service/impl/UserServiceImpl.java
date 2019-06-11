@@ -17,7 +17,7 @@ import com.bridgelabz.fundonoteapp.model.Login;
 import com.bridgelabz.fundonoteapp.model.UserDetails;
 import com.bridgelabz.fundonoteapp.repository.UserRepository;
 import com.bridgelabz.fundonoteapp.service.UserService;
-import com.bridgelabz.fundonoteapp.util.JwtUtil;
+import com.bridgelabz.fundonoteapp.util.JwtToken;
 import com.bridgelabz.fundonoteapp.util.PasswordEncryption;
 
 @Service
@@ -31,14 +31,14 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserDetails UserRegistration(UserDetails user, HttpServletRequest request) {
-		System.out.println(PasswordEncryption.securePassword(user.getPassword()));
-		user.setPassword(PasswordEncryption.securePassword(user.getPassword()));
+		System.out.println(PasswordEncryption.PasswordEncoder(user.getPassword()));
+		user.setPassword(PasswordEncryption.PasswordEncoder(user.getPassword()));
 		userRepository.save(user);
 		Optional<UserDetails> user1 = userRepository.findByEmailId(user.getEmail());
 		if (user1 != null) {
 			System.out.println("Sucessfull reg");
 			// Optional<User> maybeUser = userRep.findById(user.getId());
-			String tokenGen = JwtUtil.jwtToken(user1.get().getUserId());
+			String tokenGen = JwtToken.jwtTokenGenerator(user1.get().getUserId());
 			UserDetails u = user1.get();
 			StringBuffer requestUrl = request.getRequestURL();
 			System.out.println(requestUrl);
@@ -61,20 +61,20 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public List<UserDetails> login(Login user) {
 		List<UserDetails> userList = userRepository.findByEmailIdAndPassword(user.getEmail(),
-				PasswordEncryption.securePassword(user.getPassword()));
+				PasswordEncryption.PasswordEncoder(user.getPassword()));
 		return userList;
 	}
 
 	@Override
 	public UserDetails updateUser(String token, UserDetails user) {
-		int varifiedUserId = JwtUtil.parseJWT(token);
+		int varifiedUserId = JwtToken.jwtTokenVerifier(token);
 		Optional<UserDetails> maybeUser = userRepository.findByUserId(varifiedUserId);
 		UserDetails presentUser = maybeUser.map(existingUser -> {
 			existingUser.setEmail(user.getEmail() != null ? user.getEmail() : maybeUser.get().getEmail());
 			existingUser.setMobileNo(user.getMobileNo() != null ? user.getMobileNo() : maybeUser.get().getMobileNo());
 			existingUser.setUserName(user.getUserName() != null ? user.getUserName() : maybeUser.get().getUserName());
-			existingUser.setPassword(user.getPassword() != null ? PasswordEncryption.securePassword(user.getPassword())
-					: PasswordEncryption.securePassword(maybeUser.get().getPassword()));
+			existingUser.setPassword(user.getPassword() != null ? PasswordEncryption.PasswordEncoder(user.getPassword())
+					: PasswordEncryption.PasswordEncoder(maybeUser.get().getPassword()));
 			return existingUser;
 		}).orElseThrow(() -> new RuntimeException("User Not Found"));
 
@@ -83,7 +83,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public boolean deleteUser(String token) {
-		int varifiedUserId = JwtUtil.parseJWT(token);
+		int varifiedUserId = JwtToken.jwtTokenVerifier(token);
 
 		// return userRep.deleteById(varifiedUserId);
 		Optional<UserDetails> maybeUser = userRepository.findByUserId(varifiedUserId);
@@ -135,7 +135,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserDetails update(String token,UserDetails user) {
-		int varifiedUserId = JwtUtil.parseJWT(token);
+		int varifiedUserId = JwtToken.jwtTokenVerifier(token);
 		if(varifiedUserId==user.getUserId()) 
 			return userRepository.save(user);
 		return user;
